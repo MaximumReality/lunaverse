@@ -1,0 +1,22 @@
+<div id="game-stage" style="position:relative; width:100%; height:100vh; background:url('your-background.png');">
+  
+  <img id="mochkil-sprite" src="mochkil-sprite.png" 
+       style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:150px;">
+
+  <audio id="surprise-sound" src="snack-attack.mp3"></audio>
+</div>
+
+<script>
+  const stage = document.getElementById('game-stage');
+  const sprite = document.getElementById('mochkil-sprite');
+  const sound = document.getElementById('surprise-sound');
+
+  stage.addEventListener('click', function() {
+      // Show sprite and play original music
+      sprite.style.display = 'block';
+      sound.play();
+
+      // Hide it again after 2 seconds so they can click again
+      setTimeout(() => { sprite.style.display = 'none'; }, 2000);
+  });
+</script>
