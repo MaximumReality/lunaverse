@@ -17,6 +17,41 @@
       sound.play();
 
       // Hide it again after 2 seconds so they can click again
-      setTimeout(() => { sprite.style.display = 'none'; }, 2000);
-  });
+      setTimeout(() => { sprite.style.display = 'none'; }, 
+
+                 // Lunaverse Random Surprise Logic
+const sprites = ['mochkil-chef.png', 'azul-star.png', 'luna-crown.png']; // Your clipped sprites
+const sounds = ['snack-attack.mp3', 'azul-laugh.mp3', 'birthday-tune.mp3']; // Your ripped MP3s
+
+const stage = document.body;
+
+stage.addEventListener('click', (e) => {
+    // 1. Pick random assets
+    const randomSprite = sprites[Math.floor(Math.random() * sprites.length)];
+    const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+
+    // 2. Play the sound
+    const audio = new Audio(randomSound);
+    audio.play();
+
+    // 3. Create and position the sprite where they clicked
+    const img = document.createElement('img');
+    img.src = randomSprite;
+    img.style.position = 'absolute';
+    img.style.left = `${e.clientX - 50}px`; // Center on click
+    img.style.top = `${e.clientY - 50}px`;
+    img.style.width = '100px';
+    document.body.appendChild(img);
+
+    // 4. Fade out and remove after 1.5 seconds
+    setTimeout(() => { img.remove(); }, 1500);
+ 
+  // Add this inside your click listener
+if (randomSprite === 'unicorn.png') {
+    document.body.style.backgroundColor = 'lavender';
+    setTimeout(() => { document.body.style.backgroundColor = 'white'; }, 500);
+}
+
+});
+
 </script>
