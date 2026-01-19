@@ -32,66 +32,83 @@
 </div>
 
 <script>
-    const stage = document.getElementById('game-stage');
-    const grandma = document.getElementById('grandma');
+const stage = document.getElementById('game-stage');
+const grandma = document.getElementById('grandma');
 
-    // 1. INVENTORY ARRAYS (Exact names from your repo)
-    const stationarySprites = [
-        'Stella.png', 'elina_stella.png', 'friend1.png', 
-        'luna_kitty.png', 'luna_unicorn.png', 'read_cloud.png', 'stella_star.png'
-    ];
+// 1. GLOBAL AUDIO PLAYER (To prevent overlapping)
+let currentAudio = null;
 
-    const eastBoundSprites = [
-        'blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'
-    ];
+function playSound(file) {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0; // Reset to start
+    }
+    currentAudio = new Audio(file);
+    currentAudio.play();
+}
 
-    const sounds = [
-        'Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'goodnight-adventure.mp3'
-    ];
+// 2. STAR TRAIL LOGIC
+function createStar(x, y) {
+    const star = document.createElement('div');
+    star.innerHTML = '✨'; // Matching your wallpaper stars
+    star.style.position = 'absolute';
+    star.style.left = x + 'px';
+    star.style.top = y + 'px';
+    star.style.fontSize = '20px';
+    star.style.pointerEvents = 'none';
+    star.style.transition = 'all 0.8s ease-out';
+    stage.appendChild(star);
 
-    // 2. INTERACTION LOGIC
-    stage.addEventListener('click', (e) => {
-        const randomChance = Math.random();
+    // Make it float up and fade
+    setTimeout(() => {
+        star.style.transform = 'translateY(-50px) scale(0)';
+        star.style.opacity = '0';
+    }, 10);
+    setTimeout(() => star.remove(), 800);
+}
 
-        // A. 10% Chance Grandma appears with lemons
-        if (randomChance < 0.1) {
-            grandma.style.display = 'block';
-            setTimeout(() => { grandma.style.display = 'none'; }, 3000);
-        }
+// 3. MAIN INTERACTION
+stage.addEventListener('click', (e) => {
+    // Sparkle trail at touch point
+    createStar(e.clientX, e.clientY);
 
-        // B. Pick random Audio
-        const randomAudio = new Audio(sounds[Math.floor(Math.random() * sounds.length)]);
-        randomAudio.play();
+    const randomChance = Math.random();
 
-        // C. Decide: Is it a Zoomer or a Popper?
-        if (randomChance > 0.7) {
-            // Create a "Zoomer" (East-bound)
-            const zoomer = document.createElement('img');
-            zoomer.src = eastBoundSprites[Math.floor(Math.random() * eastBoundSprites.length)];
-            zoomer.className = 'sprite zoom-east';
-            zoomer.style.top = Math.random() * 60 + 10 + '%'; // Random vertical lane
-            zoomer.style.width = '180px';
-            stage.appendChild(zoomer);
-            setTimeout(() => zoomer.remove(), 4500);
-        } else {
-            // Create a "Popper" (Appears at touch point)
-            const popper = document.createElement('img');
-            popper.src = stationarySprites[Math.floor(Math.random() * stationarySprites.length)];
-            popper.className = 'sprite';
-            popper.style.left = (e.clientX - 75) + 'px';
-            popper.style.top = (e.clientY - 75) + 'px';
-            popper.style.width = '150px';
-            stage.appendChild(popper);
-            
-            // Special Background Flash for Unicorn
-            if (popper.src.includes('luna_unicorn.png')) {
-                stage.style.filter = 'hue-rotate(90deg)';
-                setTimeout(() => stage.style.filter = 'none', 1000);
-            }
+    // A. 10% Chance Grandma appears with lemons
+    if (randomChance < 0.1) {
+        grandma.style.display = 'block';
+        setTimeout(() => { grandma.style.display = 'none'; }, 3000);
+    }
 
-            setTimeout(() => popper.remove(), 2000);
-        }
-    });
+    // B. Play Random Audio (Managed)
+    const stationarySounds = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3'];
+    playSound(stationarySounds[Math.floor(Math.random() * stationarySounds.length)]);
+
+    // C. Sprite Logic
+    if (randomChance > 0.7) {
+        // Zoomer Logic for East-facing sprites
+        const eastBound = ['blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'];
+        const zoomer = document.createElement('img');
+        zoomer.src = eastBound[Math.floor(Math.random() * eastBound.length)];
+        zoomer.className = 'sprite zoom-east'; // Uses the CSS animation from before
+        zoomer.style.top = Math.random() * 60 + 10 + '%';
+        zoomer.style.width = '180px';
+        stage.appendChild(zoomer);
+        setTimeout(() => zoomer.remove(), 4500);
+    } else {
+        // Popper Logic for Stationary sprites
+        const poppers = ['Stella.png', 'elina_stella.png', 'friend1.png', 'luna_kitty.png', 'luna_unicorn.png', 'stella_star.png'];
+        const img = document.createElement('img');
+        img.src = poppers[Math.floor(Math.random() * poppers.length)];
+        img.className = 'sprite';
+        img.style.left = (e.clientX - 75) + 'px';
+        img.style.top = (e.clientY - 75) + 'px';
+        img.style.width = '150px';
+        stage.appendChild(img);
+        setTimeout(() => img.remove(), 2000);
+    }
+});
+
 </script>
 
 </body>
