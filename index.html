@@ -5,36 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lunaverse</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
         #game-stage {
             width: 100vw; height: 100vh;
             background: url('lunaverse_wallpaper.PNG') no-repeat center center;
             background-size: cover;
             position: relative;
+            transition: opacity 4s ease-out; /* For the gentle fade at the end */
         }
         .sprite { position: absolute; pointer-events: none; z-index: 20; }
         @keyframes walkEast { from { left: -250px; } to { left: 110vw; } }
         .zoom-east { animation: walkEast 4s linear forwards; }
         .sparkle { position: absolute; pointer-events: none; transition: all 0.8s ease-out; font-size: 24px; z-index: 15; }
+        
+        #end-screen {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
+
     <div id="game-stage">
         <img id="grandma" src="preserved_lemon .png" style="display:none; position:absolute; bottom:0; left:0; width:200px; z-index:30;">
+        
+        <div id="end-screen">
+            <h1 style="font-size: 2.5rem;">✨ Magic Time Over ✨</h1>
+            <p>Time for a snack or a nap!</p>
+        </div>
     </div>
 
 <script>
     const stage = document.getElementById('game-stage');
     const grandma = document.getElementById('grandma');
+    const endScreen = document.getElementById('end-screen');
     let currentAudio = null;
+    let gameActive = true;
 
-    function playSound(file) {
-        if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    // --- HELPER FUNCTION: PLAY SOUND ---
+    // Uses your logic to allow or prevent sound interruption
+    function playSound(file, interrupt = true) {
+        if (currentAudio && interrupt) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
         currentAudio = new Audio(file);
+        currentAudio.volume = 0.5; // Safe volume for iPhone play
         currentAudio.play();
     }
 
-    stage.addEventListener('click', (e) => {
+    // --- TAP HANDLER ---
+    function handleTap(e) {
+        if (!gameActive) return;
+
         // 1. Sparkle Trail
         const star = document.createElement('div');
         star.className = 'sparkle';
@@ -48,9 +76,11 @@
         }, 10);
         setTimeout(() => star.remove(), 800);
 
-        // 2. SPECIAL MOON TAP: Always triggers the Unicorn
-        // Adjust these numbers if the moon is in a different spot on your screen
-        if (e.clientX < 250 && e.clientY < 250) {
+        // 2. SPECIAL MOON TAP: 25% of top-left screen triggers the Unicorn
+        const moonZoneX = window.innerWidth * 0.25;
+        const moonZoneY = window.innerHeight * 0.25;
+        
+        if (e.clientX < moonZoneX && e.clientY < moonZoneY) {
             const unicorn = document.createElement('img');
             unicorn.src = 'luna_unicorn.png';
             unicorn.className = 'sprite';
@@ -58,22 +88,23 @@
             unicorn.style.top = (e.clientY - 100) + 'px';
             unicorn.style.width = '250px'; 
             stage.appendChild(unicorn);
-            playSound('luna_whisper.mp3'); 
+            
+            playSound('luna_whisper.mp3', false); // Let the magical whisper finish
             setTimeout(() => unicorn.remove(), 3000);
-            return; // Stop here so we don't trigger a random sprite too
+            return; 
         }
 
-        // 3. RANDOM LOGIC (Normal Play)
+        // 3. RANDOM LOGIC
         const randomChance = Math.random();
         const sounds = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3'];
         playSound(sounds[Math.floor(Math.random() * sounds.length)]);
 
-        if (randomChance < 0.1) { // 10% Grandma
+        if (randomChance < 0.1) { // 10% Chance for Grandma
             grandma.style.display = 'block';
             setTimeout(() => { grandma.style.display = 'none'; }, 3000);
         }
 
-        if (randomChance > 0.7) { // 30% Zoomers
+        if (randomChance > 0.7) { // 30% Zoomers (East Facing)
             const zoomers = ['blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'];
             const z = document.createElement('img');
             z.src = zoomers[Math.floor(Math.random() * zoomers.length)];
@@ -82,7 +113,7 @@
             z.style.width = '180px';
             stage.appendChild(z);
             setTimeout(() => z.remove(), 4500);
-        } else { // 60% Poppers
+        } else { // 60% Poppers (Stationary)
             const poppers = ['Stella.png', 'elina_stella.png', 'friend1.png', 'luna_kitty.png', 'luna_unicorn.png', 'read_cloud.png', 'stella_star.png'];
             const p = document.createElement('img');
             p.src = poppers[Math.floor(Math.random() * poppers.length)];
@@ -93,7 +124,31 @@
             stage.appendChild(p);
             setTimeout(() => p.remove(), 2500);
         }
-    });
+    }
+
+    stage.addEventListener('click', handleTap);
+
+    // --- AUTO-END AFTER 2 MINUTES ---
+    setTimeout(() => {
+        gameActive = false;
+        
+        // Remove all active sprites and sparkles
+        document.querySelectorAll('.sprite, .sparkle').forEach(el => el.remove());
+
+        // Stop the music
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+
+        // Play the Goodnight song as the finale
+        playSound('goodnight-adventure.mp3', true);
+
+        // Visual fade out and end message
+        stage.style.opacity = 0.3;
+        endScreen.style.display = 'block';
+    }, 120000); // 120,000ms = 2 minutes
 </script>
+
 </body>
 </html>
