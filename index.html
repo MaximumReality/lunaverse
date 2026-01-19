@@ -1,57 +1,98 @@
-<div id="game-stage" style="position:relative; width:100%; height:100vh; background:url('your-background.png');">
-  
-  <img id="mochkil-sprite" src="mochkil-sprite.png" 
-       style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:150px;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lunaverse Adventure</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+        
+        #game-stage {
+            width: 100vw;
+            height: 100vh;
+            background: url('lunaverse_wallpaper.PNG') no-repeat center center;
+            background-size: cover;
+            position: relative;
+        }
 
-  <audio id="surprise-sound" src="snack-attack.mp3"></audio>
+        .sprite { position: absolute; pointer-events: none; transition: transform 0.2s; }
+        
+        /* Animation for zooming East */
+        @keyframes walkEast {
+            from { left: -250px; }
+            to { left: 110vw; }
+        }
+        .zoom-east { animation: walkEast 4s linear forwards; }
+    </style>
+</head>
+<body>
+
+<div id="game-stage">
+    <img id="grandma" src="preserved_lemon .png" style="display:none; position:absolute; bottom:0; left:0; width:200px; z-index:10;">
 </div>
 
 <script>
-  const stage = document.getElementById('game-stage');
-  const sprite = document.getElementById('mochkil-sprite');
-  const sound = document.getElementById('surprise-sound');
+    const stage = document.getElementById('game-stage');
+    const grandma = document.getElementById('grandma');
 
-  stage.addEventListener('click', function() {
-      // Show sprite and play original music
-      sprite.style.display = 'block';
-      sound.play();
+    // 1. INVENTORY ARRAYS (Exact names from your repo)
+    const stationarySprites = [
+        'Stella.png', 'elina_stella.png', 'friend1.png', 
+        'luna_kitty.png', 'luna_unicorn.png', 'read_cloud.png', 'stella_star.png'
+    ];
 
-      // Hide it again after 2 seconds so they can click again
-      setTimeout(() => { sprite.style.display = 'none'; }, 
+    const eastBoundSprites = [
+        'blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'
+    ];
 
-                 // Lunaverse Random Surprise Logic
-const sprites = ['mochkil-chef.png', 'azul-star.png', 'luna-crown.png']; // Your clipped sprites
-const sounds = ['snack-attack.mp3', 'azul-laugh.mp3', 'birthday-tune.mp3']; // Your ripped MP3s
+    const sounds = [
+        'Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'goodnight-adventure.mp3'
+    ];
 
-const stage = document.body;
+    // 2. INTERACTION LOGIC
+    stage.addEventListener('click', (e) => {
+        const randomChance = Math.random();
 
-stage.addEventListener('click', (e) => {
-    // 1. Pick random assets
-    const randomSprite = sprites[Math.floor(Math.random() * sprites.length)];
-    const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+        // A. 10% Chance Grandma appears with lemons
+        if (randomChance < 0.1) {
+            grandma.style.display = 'block';
+            setTimeout(() => { grandma.style.display = 'none'; }, 3000);
+        }
 
-    // 2. Play the sound
-    const audio = new Audio(randomSound);
-    audio.play();
+        // B. Pick random Audio
+        const randomAudio = new Audio(sounds[Math.floor(Math.random() * sounds.length)]);
+        randomAudio.play();
 
-    // 3. Create and position the sprite where they clicked
-    const img = document.createElement('img');
-    img.src = randomSprite;
-    img.style.position = 'absolute';
-    img.style.left = `${e.clientX - 50}px`; // Center on click
-    img.style.top = `${e.clientY - 50}px`;
-    img.style.width = '100px';
-    document.body.appendChild(img);
+        // C. Decide: Is it a Zoomer or a Popper?
+        if (randomChance > 0.7) {
+            // Create a "Zoomer" (East-bound)
+            const zoomer = document.createElement('img');
+            zoomer.src = eastBoundSprites[Math.floor(Math.random() * eastBoundSprites.length)];
+            zoomer.className = 'sprite zoom-east';
+            zoomer.style.top = Math.random() * 60 + 10 + '%'; // Random vertical lane
+            zoomer.style.width = '180px';
+            stage.appendChild(zoomer);
+            setTimeout(() => zoomer.remove(), 4500);
+        } else {
+            // Create a "Popper" (Appears at touch point)
+            const popper = document.createElement('img');
+            popper.src = stationarySprites[Math.floor(Math.random() * stationarySprites.length)];
+            popper.className = 'sprite';
+            popper.style.left = (e.clientX - 75) + 'px';
+            popper.style.top = (e.clientY - 75) + 'px';
+            popper.style.width = '150px';
+            stage.appendChild(popper);
+            
+            // Special Background Flash for Unicorn
+            if (popper.src.includes('luna_unicorn.png')) {
+                stage.style.filter = 'hue-rotate(90deg)';
+                setTimeout(() => stage.style.filter = 'none', 1000);
+            }
 
-    // 4. Fade out and remove after 1.5 seconds
-    setTimeout(() => { img.remove(); }, 1500);
- 
-  // Add this inside your click listener
-if (randomSprite === 'unicorn.png') {
-    document.body.style.backgroundColor = 'lavender';
-    setTimeout(() => { document.body.style.backgroundColor = 'white'; }, 500);
-}
-
-});
-
+            setTimeout(() => popper.remove(), 2000);
+        }
+    });
 </script>
+
+</body>
+</html>
