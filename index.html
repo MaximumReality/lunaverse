@@ -13,21 +13,80 @@
             position: relative;
             transition: opacity 4s ease-out;
         }
-        .sprite { position: absolute; pointer-events: none; z-index: 20; }
-        @keyframes walkEast { from { left: -250px; } to { left: 110vw; } }
-        .zoom-east { animation: walkEast 4s linear forwards; }
-        .sparkle { position: absolute; pointer-events: none; transition: all 0.8s ease-out; font-size: 24px; z-index: 15; }
-        
-        #end-screen {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            z-index: 100;
+        <style>
+    .sprite { 
+        position: absolute; 
+        pointer-events: none; 
+        z-index: 20; 
+        will-change: transform, opacity; /* Optimizes for iPhone GPU */
+        transition: transform 0.3s ease-out;
+    }
+    
+    /* Let's make the sparkles more "Maximum Reality" style */
+    .sparkle {
+        position: absolute;
+        pointer-events: none;
+        font-size: 30px;
+        z-index: 100;
+        animation: flyUp 0.8s ease-out forwards;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-100px) scale(0); opacity: 0; }
+    }
+</style>
+
+<script>
+    // Use pointerdown for instant response on iPhone
+    stage.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Prevents zooming/scrolling while tapping
+        handleTap(e);
+    });
+
+    // Modified handleTap for better hit detection
+    function handleTap(e) {
+        if (!gameActive) return;
+
+        // Sparkle logic
+        const star = document.createElement('div');
+        star.className = 'sparkle';
+        star.innerHTML = '✨';
+        star.style.left = `${e.clientX - 15}px`;
+        star.style.top = `${e.clientY - 15}px`;
+        stage.appendChild(star);
+        setTimeout(() => star.remove(), 800);
+
+        // Moon Zone detection (Top Left)
+        if (e.clientX < window.innerWidth * 0.3 && e.clientY < window.innerHeight * 0.2) {
+            spawnSpecial('luna_unicorn.png', e.clientX, e.clientY, 'luna_whisper.mp3');
+            return;
         }
-    </style>
+
+        // Random Character Logic
+        const chance = Math.random();
+        if (chance > 0.8) {
+            spawnZoomer(); // Azul or Mochkil
+        } else {
+            spawnPopper(e.clientX, e.clientY);
+        }
+    }
+
+    function spawnPopper(x, y) {
+        const poppers = ['Stella.png', 'luna_kitty.png', 'stella_star.png'];
+        const img = document.createElement('img');
+        img.src = poppers[Math.floor(Math.random() * poppers.length)];
+        img.className = 'sprite';
+        img.style.left = `${x - 80}px`;
+        img.style.top = `${y - 80}px`;
+        img.style.width = '160px';
+        stage.appendChild(img);
+        
+        playSound(audioFiles[Math.floor(Math.random() * 3)]);
+        setTimeout(() => img.remove(), 2000);
+    }
+</script>
+
 </head>
 <body>
 
