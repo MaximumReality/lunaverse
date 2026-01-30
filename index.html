@@ -6,159 +6,120 @@
     <title>Lunaverse</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        
         #game-stage {
             width: 100vw; height: 100vh;
             background: url('lunaverse_wallpaper.PNG') no-repeat center center;
             background-size: cover;
             position: relative;
-            transition: opacity 4s ease-out;
+            transition: opacity 2s ease-in-out;
         }
-        .sprite { position: absolute; pointer-events: none; z-index: 20; }
+
+        .sprite { position: absolute; pointer-events: none; z-index: 20; animation: popIn 0.4s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        
         @keyframes walkEast { from { left: -250px; } to { left: 110vw; } }
         .zoom-east { animation: walkEast 4s linear forwards; }
-        .sparkle { position: absolute; pointer-events: none; transition: all 0.8s ease-out; font-size: 24px; z-index: 15; }
-        
+
+        .sparkle {
+            position: absolute; pointer-events: none; font-size: 40px; z-index: 100;
+            animation: flyUp 0.8s ease-out forwards;
+        }
+        @keyframes flyUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+
         #end-screen {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            z-index: 100;
+            display: none; /* This keeps it hidden until the timer is up */
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; text-align: center; z-index: 1000;
+            background: rgba(0,0,0,0.7); padding: 30px; border-radius: 30px; width: 80%;
         }
     </style>
 </head>
 <body>
 
     <div id="game-stage">
-        <img id="grandma" src="preserved_lemon .png" style="display:none; position:absolute; bottom:0; left:0; width:200px; z-index:30;">
-        
         <div id="end-screen">
             <h1 style="font-size: 2.5rem;">✨ Magic Time Over ✨</h1>
-            <p>Time for a snack or a nap!</p>
+            <p style="font-size: 1.5rem;">Time for a snack or a nap!</p>
         </div>
     </div>
 
 <script>
     const stage = document.getElementById('game-stage');
-    const grandma = document.getElementById('grandma');
     const endScreen = document.getElementById('end-screen');
-    let currentAudio = null;
     let gameActive = true;
+    let currentAudio = null;
 
-    // --- 1. SIGNAL-PROOF PRELOADING ---
-    const audioCache = {};
+    // Preload sounds
     const audioFiles = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'happy-day.mp3', 'goodnight-adventure.mp3'];
-
-    audioFiles.forEach(file => {
-        const audio = new Audio(file);
-        audio.preload = 'auto'; 
-        audioCache[file] = audio;
-    });
-
-    // --- 2. UNIFIED HELPER FUNCTION (Uses Cache + Stops Overlap) ---
-    function playSound(file, interrupt = true) {
-        if (currentAudio && interrupt) {
+    
+    function playSound(file) {
+        // This STOP the previous sound before playing the next one
+        if (currentAudio) {
             currentAudio.pause();
             currentAudio.currentTime = 0;
         }
-        
-        // Pull from cache so it plays instantly without needing more signal
-        currentAudio = audioCache[file];
-        
-        if (currentAudio) {
-            currentAudio.volume = 0.5;
-            const playPromise = currentAudio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(e => console.log("Audio block:", e));
-            }
-        }
+        currentAudio = new Audio(file);
+        currentAudio.volume = 0.5;
+        currentAudio.play().catch(e => console.log("Tap to play"));
     }
 
-    // --- 3. TAP HANDLER ---
-    function handleTap(e) {
+    // iPhone-optimized Touch Event
+    stage.addEventListener('touchstart', (e) => {
         if (!gameActive) return;
+        e.preventDefault(); 
+        
+        // Use the first finger touch location
+        const touch = e.changedTouches[0];
+        handleAction(touch.clientX, touch.clientY);
+    }, { passive: false });
 
-        // Sparkle Trail
+    function handleAction(x, y) {
+        // 1. Sparkle
         const star = document.createElement('div');
         star.className = 'sparkle';
         star.innerHTML = '✨';
-        star.style.left = e.clientX + 'px';
-        star.style.top = e.clientY + 'px';
+        star.style.left = (x - 20) + 'px';
+        star.style.top = (y - 20) + 'px';
         stage.appendChild(star);
-        setTimeout(() => {
-            star.style.transform = 'translateY(-50px) scale(0)';
-            star.style.opacity = '0';
-        }, 10);
         setTimeout(() => star.remove(), 800);
 
-        // SPECIAL MOON TAP
-        const moonZoneX = window.innerWidth * 0.25;
-        const moonZoneY = window.innerHeight * 0.25;
+        // 2. Logic for characters
+        const chance = Math.random();
         
-        if (e.clientX < moonZoneX && e.clientY < moonZoneY) {
-            const unicorn = document.createElement('img');
-            unicorn.src = 'luna_unicorn.png';
-            unicorn.className = 'sprite';
-            unicorn.style.left = (e.clientX - 100) + 'px';
-            unicorn.style.top = (e.clientY - 100) + 'px';
-            unicorn.style.width = '250px'; 
-            stage.appendChild(unicorn);
-            
-            playSound('luna_whisper.mp3', true); 
-            setTimeout(() => unicorn.remove(), 3000);
-            return; 
-        }
-
-        // RANDOM LOGIC & AUDIO
-        const randomChance = Math.random();
-        const sounds = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'happy-day.mp3'];
-        
-        playSound(sounds[Math.floor(Math.random() * sounds.length)], true);
-
-        if (randomChance < 0.1) {
-            grandma.style.display = 'block';
-            setTimeout(() => { grandma.style.display = 'none'; }, 3000);
-        }
-
-        if (randomChance > 0.7) { // Zoomers
-            const zoomers = ['blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'];
+        if (chance > 0.8) { // Zoomer (Azul or Mochkil)
+            const zoomers = ['blue_azul_front.png', 'mochkil_walk_right_cake.png'];
             const z = document.createElement('img');
             z.src = zoomers[Math.floor(Math.random() * zoomers.length)];
             z.className = 'sprite zoom-east';
-            z.style.top = Math.random() * 60 + 10 + '%';
+            z.style.top = (Math.random() * 60 + 10) + '%';
             z.style.width = '180px';
             stage.appendChild(z);
             setTimeout(() => z.remove(), 4500);
-        } else { // Poppers
-            const poppers = ['Stella.png', 'elina_stella.png', 'friend1.png', 'luna_kitty.png', 'luna_unicorn.png', 'read_cloud.png', 'stella_star.png'];
+        } else { // Popper (Stella and friends)
+            const poppers = ['Stella.png', 'luna_kitty.png', 'luna_unicorn.png'];
             const p = document.createElement('img');
             p.src = poppers[Math.floor(Math.random() * poppers.length)];
             p.className = 'sprite';
-            p.style.left = (e.clientX - 75) + 'px';
-            p.style.top = (e.clientY - 75) + 'px';
+            p.style.left = (x - 80) + 'px';
+            p.style.top = (y - 80) + 'px';
             p.style.width = '160px';
             stage.appendChild(p);
-            setTimeout(() => p.remove(), 2500);
+            setTimeout(() => p.remove(), 2000);
         }
+
+        // 3. Audio (Randomly pick one of the first 3 sounds)
+        playSound(audioFiles[Math.floor(Math.random() * 3)]);
     }
 
-    stage.addEventListener('click', handleTap);
-
-    // --- 4. AUTO-END AFTER 2 MINUTES ---
+    // --- END GAME TIMER (2 Minutes) ---
     setTimeout(() => {
         gameActive = false;
-        document.querySelectorAll('.sprite, .sparkle').forEach(el => el.remove());
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-        }
-        playSound('goodnight-adventure.mp3', true);
-        stage.style.opacity = 0.3;
-        endScreen.style.display = 'block';
-    }, 120000);
-</script>
+        stage.style.opacity = "0.3";
+        endScreen.style.display = "block";
+        playSound('goodnight-adventure.mp3');
+    }, 120000); 
 
+</script>
 </body>
 </html>
