@@ -6,138 +6,159 @@
     <title>Lunaverse</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
-        
         #game-stage {
             width: 100vw; height: 100vh;
             background: url('lunaverse_wallpaper.PNG') no-repeat center center;
             background-size: cover;
             position: relative;
-            transition: opacity 2s ease-in-out;
+            transition: opacity 4s ease-out;
         }
-
-        /* Character Styles */
-        .sprite { 
-            position: absolute; 
-            pointer-events: none; 
-            z-index: 20; 
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            -webkit-user-select: none;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-
-        /* Sparkle Styles */
-        .sparkle {
-            position: absolute;
-            pointer-events: none;
-            font-size: 50px;
-            z-index: 100;
-            animation: flyUp 0.8s ease-out forwards;
-        }
-
-        @keyframes flyUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) scale(0); opacity: 0; }
-        }
-
-        /* The End Screen - Hidden by default */
+        .sprite { position: absolute; pointer-events: none; z-index: 20; }
+        @keyframes walkEast { from { left: -250px; } to { left: 110vw; } }
+        .zoom-east { animation: walkEast 4s linear forwards; }
+        .sparkle { position: absolute; pointer-events: none; transition: all 0.8s ease-out; font-size: 24px; z-index: 15; }
+        
         #end-screen {
-            display: none; 
+            display: none;
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             color: white;
             text-align: center;
-            z-index: 1000;
-            background: rgba(0,0,0,0.6);
-            padding: 20px;
-            border-radius: 20px;
-            width: 80%;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
 
     <div id="game-stage">
+        <img id="grandma" src="preserved_lemon .png" style="display:none; position:absolute; bottom:0; left:0; width:200px; z-index:30;">
+        
         <div id="end-screen">
             <h1 style="font-size: 2.5rem;">✨ Magic Time Over ✨</h1>
-            <p style="font-size: 1.5rem;">Time for a snack or a nap!</p>
+            <p>Time for a snack or a nap!</p>
         </div>
     </div>
 
 <script>
     const stage = document.getElementById('game-stage');
+    const grandma = document.getElementById('grandma');
     const endScreen = document.getElementById('end-screen');
+    let currentAudio = null;
     let gameActive = true;
 
-    // Audio Setup
-    const audioFiles = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'happy-day.mp3', 'goodnight-adventure.mp3'];
+    // --- 1. SIGNAL-PROOF PRELOADING ---
     const audioCache = {};
+    const audioFiles = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'happy-day.mp3', 'goodnight-adventure.mp3'];
+
     audioFiles.forEach(file => {
-        audioCache[file] = new Audio(file);
-        audioCache[file].preload = 'auto';
+        const audio = new Audio(file);
+        audio.preload = 'auto'; 
+        audioCache[file] = audio;
     });
 
-    function playSound(file) {
-        const sound = new Audio(file); // New instance allows overlapping sounds for toddlers
-        sound.volume = 0.5;
-        sound.play().catch(e => console.log("Tap to start audio"));
+    // --- 2. UNIFIED HELPER FUNCTION (Uses Cache + Stops Overlap) ---
+    function playSound(file, interrupt = true) {
+        if (currentAudio && interrupt) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        
+        // Pull from cache so it plays instantly without needing more signal
+        currentAudio = audioCache[file];
+        
+        if (currentAudio) {
+            currentAudio.volume = 0.5;
+            const playPromise = currentAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.log("Audio block:", e));
+            }
+        }
     }
 
-    // Toddler-friendly Touch Logic
-    stage.addEventListener('touchstart', (e) => {
+    // --- 3. TAP HANDLER ---
+    function handleTap(e) {
         if (!gameActive) return;
-        e.preventDefault();
 
-        // Support multi-finger drumming!
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-            spawnMagic(touch.clientX, touch.clientY);
-        }
-    }, { passive: false });
-
-    function spawnMagic(x, y) {
-        // 1. Sparkle
+        // Sparkle Trail
         const star = document.createElement('div');
         star.className = 'sparkle';
         star.innerHTML = '✨';
-        star.style.left = (x - 25) + 'px';
-        star.style.top = (y - 25) + 'px';
+        star.style.left = e.clientX + 'px';
+        star.style.top = e.clientY + 'px';
         stage.appendChild(star);
+        setTimeout(() => {
+            star.style.transform = 'translateY(-50px) scale(0)';
+            star.style.opacity = '0';
+        }, 10);
         setTimeout(() => star.remove(), 800);
 
-        // 2. Character
-        const poppers = ['Stella.png', 'luna_kitty.png', 'luna_unicorn.png', 'blue_azul_front.png', 'mochkil_walk_right_cake.png'];
-        const p = document.createElement('img');
-        p.src = poppers[Math.floor(Math.random() * poppers.length)];
-        p.className = 'sprite';
-        p.style.left = (x - 100) + 'px';
-        p.style.top = (y - 100) + 'px';
-        p.style.width = '200px';
-        stage.appendChild(p);
+        // SPECIAL MOON TAP
+        const moonZoneX = window.innerWidth * 0.25;
+        const moonZoneY = window.innerHeight * 0.25;
         
-        // 3. Sound
-        playSound(audioFiles[Math.floor(Math.random() * 3)]);
+        if (e.clientX < moonZoneX && e.clientY < moonZoneY) {
+            const unicorn = document.createElement('img');
+            unicorn.src = 'luna_unicorn.png';
+            unicorn.className = 'sprite';
+            unicorn.style.left = (e.clientX - 100) + 'px';
+            unicorn.style.top = (e.clientY - 100) + 'px';
+            unicorn.style.width = '250px'; 
+            stage.appendChild(unicorn);
+            
+            playSound('luna_whisper.mp3', true); 
+            setTimeout(() => unicorn.remove(), 3000);
+            return; 
+        }
 
-        // Clean up character
-        setTimeout(() => {
-            p.style.transition = "opacity 0.5s";
-            p.style.opacity = "0";
-            setTimeout(() => p.remove(), 500);
-        }, 2000);
+        // RANDOM LOGIC & AUDIO
+        const randomChance = Math.random();
+        const sounds = ['Luna-moon-Stella-star.mp3', 'luna_whisper.mp3', 'happy-day.mp3'];
+        
+        playSound(sounds[Math.floor(Math.random() * sounds.length)], true);
+
+        if (randomChance < 0.1) {
+            grandma.style.display = 'block';
+            setTimeout(() => { grandma.style.display = 'none'; }, 3000);
+        }
+
+        if (randomChance > 0.7) { // Zoomers
+            const zoomers = ['blue_azul_front.png', 'cardboard_tank.png', 'mochkil_walk_right_cake.png'];
+            const z = document.createElement('img');
+            z.src = zoomers[Math.floor(Math.random() * zoomers.length)];
+            z.className = 'sprite zoom-east';
+            z.style.top = Math.random() * 60 + 10 + '%';
+            z.style.width = '180px';
+            stage.appendChild(z);
+            setTimeout(() => z.remove(), 4500);
+        } else { // Poppers
+            const poppers = ['Stella.png', 'elina_stella.png', 'friend1.png', 'luna_kitty.png', 'luna_unicorn.png', 'read_cloud.png', 'stella_star.png'];
+            const p = document.createElement('img');
+            p.src = poppers[Math.floor(Math.random() * poppers.length)];
+            p.className = 'sprite';
+            p.style.left = (e.clientX - 75) + 'px';
+            p.style.top = (e.clientY - 75) + 'px';
+            p.style.width = '160px';
+            stage.appendChild(p);
+            setTimeout(() => p.remove(), 2500);
+        }
     }
 
-    // TIMER: End game after 2 minutes
+    stage.addEventListener('click', handleTap);
+
+    // --- 4. AUTO-END AFTER 2 MINUTES ---
     setTimeout(() => {
         gameActive = false;
-        stage.style.opacity = "0.4";
-        endScreen.style.display = "block";
-        playSound('goodnight-adventure.mp3');
-    }, 120000); 
-
+        document.querySelectorAll('.sprite, .sparkle').forEach(el => el.remove());
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        playSound('goodnight-adventure.mp3', true);
+        stage.style.opacity = 0.3;
+        endScreen.style.display = 'block';
+    }, 120000);
 </script>
+
 </body>
 </html>
