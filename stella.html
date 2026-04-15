@@ -181,14 +181,13 @@ We love you Stella 💕
 <audio id="song" src="tiny_shoes.mp3"></audio>
 
 <script>
+<script>
 function blowCandles() {
   const flame = document.querySelector('.flame');
   const song = document.getElementById("song");
 
-  // fade flame
   flame.style.opacity = 0;
 
-  // puff effect
   const rect = flame.getBoundingClientRect();
   const puff = document.createElement("div");
   puff.className = "puff";
@@ -197,10 +196,17 @@ function blowCandles() {
   document.body.appendChild(puff);
   setTimeout(() => puff.remove(), 700);
 
-  // show message
   document.getElementById("message").style.opacity = 1;
 
-  // play song (safe for iOS)
+// burst more confetti when candle blown
+for (let i = 0; i < 30; i++) {
+  let s = document.createElement("div");
+  s.className = "sparkle";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.animationDuration = (1 + Math.random() * 2) + "s";
+  document.getElementById("confetti").appendChild(s);
+}
+
   if (song.paused) song.play();
 }
 
@@ -229,7 +235,7 @@ navigator.mediaDevices?.getUserMedia({ audio: true })
 })
 .catch(() => {});
 
-// create sparkles
+/* ✅ CONFETTI NOW WORKS */
 for (let i = 0; i < 40; i++) {
   let s = document.createElement("div");
   s.className = "sparkle";
