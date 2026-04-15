@@ -119,6 +119,11 @@ body {
   0% { transform: scale(0.2); opacity: 0.6; }
   100% { transform: scale(2.5); opacity: 0; }
 }
+  @keyframes pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+  100% { transform: translateX(-50%) scale(1); }
+}
 
 /* Button */
 .button {
@@ -133,6 +138,7 @@ body {
   border-radius: 25px;
   color: white;
   box-shadow: 0 0 15px hotpink;
+  animation: pulse 2s infinite ease-in-out;
 }
   /* Confetti container */
 .confetti {
