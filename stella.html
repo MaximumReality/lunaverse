@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Stella Turns One 🎂</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Comic Sans MS", cursive;
+}
+
+/* Background image */
+body {
+  background: url('stella.jpg') no-repeat center center/cover;
+}
+
+/* Overlay glow */
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,192,203,0.3), rgba(0,0,0,0.6));
+}
+
+/* Title */
+.title {
+  position: absolute;
+  top: 15%;
+  width: 100%;
+  text-align: center;
+  font-size: 2.5em;
+  color: white;
+  text-shadow: 0 0 20px pink;
+}
+
+/* Button */
+.button {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 25px;
+  font-size: 1.2em;
+  background: pink;
+  border: none;
+  border-radius: 30px;
+  color: white;
+  box-shadow: 0 0 20px pink;
+}
+
+/* Confetti animation */
+.confetti {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  animation: fall 3s linear infinite;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay"></div>
+
+<div class="title">
+  🎉 Stella Turns ONE 🎉<br>
+  April 28
+</div>
+
+<button class="button" onclick="surprise()">Tap for Surprise 🎁</button>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+// create sparkles
+for (let i = 0; i < 40; i++) {
+  let s = document.createElement("div");
+  s.className = "sparkle";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.animationDuration = (2 + Math.random() * 3) + "s";
+  document.getElementById("confetti").appendChild(s);
+}
+
+// surprise
+function surprise() {
+  alert("Happy 1st Birthday Stella! 🎂💖");
+}
+</script>
+
+</body>
+</html>
