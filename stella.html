@@ -2,108 +2,169 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Stella Turns One 🎂</title>
 
 <style>
-html, body {
+body {
   margin: 0;
-  padding: 0;
   overflow: hidden;
   font-family: "Comic Sans MS", cursive;
+  text-align: center;
 }
 
-/* Background image */
-body {
+/* Background photo */
+.bg {
+  position: fixed;
+  width: 100%;
+  height: 100%;
   background: url('stella.PNG') no-repeat center center/cover;
+  filter: brightness(0.7);
 }
 
 /* Overlay glow */
 .overlay {
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(255,192,203,0.3), rgba(0,0,0,0.6));
+  background: radial-gradient(circle, rgba(255,192,203,0.3), rgba(0,0,0,0.5));
 }
 
 /* Title */
 .title {
   position: absolute;
-  top: 15%;
+  top: 8%;
   width: 100%;
-  text-align: center;
-  font-size: 2.5em;
+  font-size: 2em;
   color: white;
-  text-shadow: 0 0 20px pink;
+  text-shadow: 0 0 15px hotpink;
+}
+
+/* Cake */
+.cake {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 100px;
+  background: #ffb6c1;
+  border-radius: 10px;
+}
+
+/* Candle */
+.candle {
+  position: absolute;
+  width: 8px;
+  height: 35px;
+  background: white;
+  top: -35px;
+}
+
+/* Flame */
+.flame {
+  width: 8px;
+  height: 12px;
+  background: orange;
+  border-radius: 50%;
+  margin-top: -12px;
+  animation: flicker 0.2s infinite;
+}
+
+@keyframes flicker {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
 }
 
 /* Button */
 .button {
   position: absolute;
-  bottom: 15%;
+  bottom: 8%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 15px 25px;
-  font-size: 1.2em;
-  background: pink;
+  padding: 12px 20px;
+  font-size: 1em;
+  background: hotpink;
   border: none;
-  border-radius: 30px;
+  border-radius: 25px;
   color: white;
-  box-shadow: 0 0 20px pink;
+  box-shadow: 0 0 15px hotpink;
 }
 
-/* Confetti animation */
-.confetti {
+/* Message */
+.message {
   position: absolute;
+  top: 40%;
   width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.sparkle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  animation: fall 3s linear infinite;
-}
-
-@keyframes fall {
-  0% { transform: translateY(-10px); opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+  font-size: 1.5em;
+  color: white;
+  opacity: 0;
+  transition: 1s;
 }
 </style>
 </head>
 
 <body>
 
+<div class="bg"></div>
 <div class="overlay"></div>
 
 <div class="title">
-  🎉 Stella Turns ONE 🎉<br>
-  April 28
+🎉 Stella Turns ONE 🎉<br>
+April 28 💖
 </div>
 
-<button class="button" onclick="surprise()">Tap for Surprise 🎁</button>
+<div class="message" id="message">
+We love you Stella 💕
+</div>
 
-<div class="confetti" id="confetti"></div>
+<div class="cake">
+  <div class="candle" style="left: 30px;"><div class="flame"></div></div>
+  <div class="candle" style="left: 80px;"><div class="flame"></div></div>
+  <div class="candle" style="left: 130px;"><div class="flame"></div></div>
+</div>
+
+<button class="button" onclick="blowCandles()">Blow Candles 🎂</button>
+
+<audio id="song" src="tiny_shoes.mp3"></audio>
 
 <script>
-// create sparkles
-for (let i = 0; i < 40; i++) {
-  let s = document.createElement("div");
-  s.className = "sparkle";
-  s.style.left = Math.random() * 100 + "vw";
-  s.style.animationDuration = (2 + Math.random() * 3) + "s";
-  document.getElementById("confetti").appendChild(s);
+function blowCandles() {
+  // turn off flames
+  document.querySelectorAll('.flame').forEach(f => f.style.display = "none");
+
+  // show message
+  document.getElementById("message").style.opacity = 1;
+
+  // play song
+  document.getElementById("song").play();
 }
 
-// surprise
-function surprise() {
-  alert("Happy 1st Birthday Stella! 🎂💖");
-}
+// mic blow detection (optional)
+navigator.mediaDevices?.getUserMedia({ audio: true })
+.then(stream => {
+  const audioContext = new AudioContext();
+  const mic = audioContext.createMediaStreamSource(stream);
+  const analyser = audioContext.createAnalyser();
+  mic.connect(analyser);
+
+  const data = new Uint8Array(analyser.frequencyBinCount);
+
+  function checkBlow() {
+    analyser.getByteFrequencyData(data);
+    let volume = data.reduce((a,b) => a+b) / data.length;
+
+    if (volume > 60) {
+      blowCandles();
+    }
+
+    requestAnimationFrame(checkBlow);
+  }
+
+  checkBlow();
+})
+.catch(() => {});
 </script>
 
 </body>
