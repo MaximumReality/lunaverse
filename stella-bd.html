@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/PNG" href="https://maximumreality.github.io/lunaverse/stella.PNG">
+<link rel="apple-touch-icon" href="https://maximumreality.github.io/lunaverse/IMG_8513.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stella Turns One 🎂</title>
+
+<!-- Bubble-letter style font -->
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Lilita One", sans-serif;
+  text-align: center;
+}
+
+/* Background */
+.bg {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url('stella.PNG') no-repeat center center/cover;
+  filter: brightness(0.85);
+}
+
+/* Glow overlay */
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,192,203,0.25), rgba(0,0,0,0.45));
+}
+
+/* Title */
+.title {
+  position: absolute;
+  top: 6vh;
+  width: 100%;
+  font-size: 2.4em;
+  color: white;
+  text-shadow:
+    0 0 8px hotpink,
+    0 0 15px hotpink,
+    0 0 25px white;
+}
+
+/* Message */
+.message {
+  position: absolute;
+  top: 32vh;
+  width: 100%;
+  font-size: 1.8em;
+  color: white;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  text-shadow: 0 0 10px pink;
+
+}
+
+
+/* Cake */
+.cake {
+  position: absolute;
+  bottom: 22vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 100px;
+  background: #ffb6c1;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Candle */
+.candle {
+  position: absolute;
+  width: 10px;
+  height: 40px;
+  background: white;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 3px;
+}
+
+/* Flame */
+.flame {
+  width: 12px;
+  height: 16px;
+  background: orange;
+  border-radius: 50%;
+  margin-top: -16px;
+  animation: flicker 0.2s infinite;
+  transition: opacity 0.5s ease-out;
+}
+
+@keyframes flicker {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
+}
+
+/* Puff animation */
+.puff {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: puff 0.6s ease-out forwards;
+}
+
+@keyframes puff {
+  0% { transform: scale(0.2); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+  @keyframes pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Button */
+.button {
+  position: absolute;
+  bottom: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 22px;
+  font-size: 1.1em;
+  background: hotpink;
+  border: none;
+  border-radius: 25px;
+  color: white;
+  box-shadow: 0 0 15px hotpink;
+  animation: pulse 2s infinite ease-in-out;
+}
+  /* Confetti container */
+.confetti {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+/* Sparkles */
+.sparkle {
+  position: absolute;
+  font-size: 14px;
+  animation: fall 3s linear forwards;
+  opacity: 0.9;
+}
+
+/* Falling animation */
+@keyframes fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+.button, .candle {
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+<div class="overlay"></div>
+<div class="confetti" id="confetti"></div>  
+
+<div class="title">
+🎉 Stella Turns ONE 🎉<br>
+April 28 💖
+</div>
+
+<div class="message" id="message">
+We love you Stella 💕
+</div>
+
+<div class="cake">
+    <div class="candle" onclick="blowCandles()">
+    <div class="flame"></div>
+  </div>
+</div>
+
+<button class="button" onclick="blowCandles()">Blow Candle 🎂</button>
+
+<audio id="song" src="tiny_shoes.mp3"></audio>
+
+
+<script>
+function makeSparkle() {
+  let s = document.createElement("div");
+  s.className = "sparkle";
+  s.textContent = "⭐️";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.fontSize = (12 + Math.random() * 10) + "px";
+  s.style.animationDuration = (2 + Math.random() * 3) + "s";
+  document.getElementById("confetti").appendChild(s);
+
+  setTimeout(() => s.remove(), 4000);
+}
+
+
+let candleLit = true;
+
+function blowCandles() {
+  const flame = document.querySelector('.flame');
+  const song = document.getElementById("song");
+
+  if (candleLit) {
+    // blow out
+    flame.style.opacity = 0;
+    candleLit = false;
+
+    // puff
+    const rect = flame.getBoundingClientRect();
+    const puff = document.createElement("div");
+    puff.className = "puff";
+    puff.style.left = rect.left + "px";
+    puff.style.top = rect.top + "px";
+    document.body.appendChild(puff);
+    setTimeout(() => puff.remove(), 700);
+
+    // show message
+    document.getElementById("message").style.opacity = 1;
+
+    // confetti burst
+    for (let i = 0; i < 40; i++) makeSparkle();
+
+    if (song.paused) song.play();
+
+  } else {
+    // re-light
+    flame.style.opacity = 1;
+    candleLit = true;
+
+    // hide message again if you want
+    // document.getElementById("message").style.opacity = 0;
+  }
+}
+
+
+/* Continuous gentle confetti */
+setInterval(() => {
+  makeSparkle();
+}, 300);
+</script>
+
+</body>
+</html>
