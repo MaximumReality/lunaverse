@@ -107,18 +107,29 @@ body {
 /* Button */
 .button {
   position: absolute;
-  bottom: 6vh;
+  bottom: 6vh; /* lowered so it doesn’t cover the cake */
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 22px;
+  padding: 12px 26px;
   font-size: 1.1em;
-  background: hotpink;
-  border: none;
-  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.25); /* soft, airy */
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 30px;
   color: white;
-  box-shadow: 0 0 15px hotpink;
-  animation: pulse 2s infinite ease-in-out;
+  backdrop-filter: blur(6px); /* frosted‑glass effect */
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.4),
+    0 0 12px rgba(255, 215, 255, 0.25);
+  animation: twinkle 3s infinite ease-in-out;
+  cursor: pointer;
+  touch-action: manipulation;
 }
+@keyframes twinkle {
+  0% { box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 14px rgba(255,255,255,0.6); }
+  100% { box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+}
+
   /* Confetti container */
 .confetti {
   position: fixed;
