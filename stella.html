@@ -143,11 +143,9 @@ body {
 /* Sparkles */
 .sparkle {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  opacity: 0.9;
+  font-size: 14px;
   animation: fall 3s linear forwards;
+  opacity: 0.9;
 }
 
 /* Falling animation */
@@ -155,6 +153,7 @@ body {
   0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
+
 
 
 </style>
@@ -176,7 +175,7 @@ We love you Stella 💕
 </div>
 
 <div class="cake">
-  <div class="candle">
+    <div class="candle" onclick="blowCandles()">
     <div class="flame"></div>
   </div>
 </div>
@@ -188,65 +187,56 @@ We love you Stella 💕
 
 <script>
 function makeSparkle() {
-  const colors = ["#ff69b4", "#ffd700", "#87cefa", "#ffffff", "#ffb6c1"];
   let s = document.createElement("div");
   s.className = "sparkle";
+  s.textContent = "⭐️";
   s.style.left = Math.random() * 100 + "vw";
-  s.style.background = colors[Math.floor(Math.random() * colors.length)];
+  s.style.fontSize = (12 + Math.random() * 10) + "px";
   s.style.animationDuration = (2 + Math.random() * 3) + "s";
   document.getElementById("confetti").appendChild(s);
 
   setTimeout(() => s.remove(), 4000);
 }
 
+
+let candleLit = true;
+
 function blowCandles() {
   const flame = document.querySelector('.flame');
   const song = document.getElementById("song");
 
-  flame.style.opacity = 0;
+  if (candleLit) {
+    // blow out
+    flame.style.opacity = 0;
+    candleLit = false;
 
-  const rect = flame.getBoundingClientRect();
-  const puff = document.createElement("div");
-  puff.className = "puff";
-  puff.style.left = rect.left + "px";
-  puff.style.top = rect.top + "px";
-  document.body.appendChild(puff);
-  setTimeout(() => puff.remove(), 700);
+    // puff
+    const rect = flame.getBoundingClientRect();
+    const puff = document.createElement("div");
+    puff.className = "puff";
+    puff.style.left = rect.left + "px";
+    puff.style.top = rect.top + "px";
+    document.body.appendChild(puff);
+    setTimeout(() => puff.remove(), 700);
 
-  document.getElementById("message").style.opacity = 1;
+    // show message
+    document.getElementById("message").style.opacity = 1;
 
-  // Confetti burst
-  for (let i = 0; i < 40; i++) {
-    makeSparkle();
+    // confetti burst
+    for (let i = 0; i < 40; i++) makeSparkle();
+
+    if (song.paused) song.play();
+
+  } else {
+    // re-light
+    flame.style.opacity = 1;
+    candleLit = true;
+
+    // hide message again if you want
+    // document.getElementById("message").style.opacity = 0;
   }
-
-  if (song.paused) song.play();
 }
 
-/* Mic blow detection */
-navigator.mediaDevices?.getUserMedia({ audio: true })
-.then(stream => {
-  const audioContext = new AudioContext();
-  const mic = audioContext.createMediaStreamSource(stream);
-  const analyser = audioContext.createAnalyser();
-  mic.connect(analyser);
-
-  const data = new Uint8Array(analyser.frequencyBinCount);
-
-  function checkBlow() {
-    analyser.getByteFrequencyData(data);
-    let volume = data.reduce((a,b) => a+b) / data.length;
-
-    if (volume > 60) {
-      blowCandles();
-    }
-
-    requestAnimationFrame(checkBlow);
-  }
-
-  checkBlow();
-})
-.catch(() => {});
 
 /* Continuous gentle confetti */
 setInterval(() => {
