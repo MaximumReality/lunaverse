@@ -6,11 +6,14 @@
 
 <title>Stella Turns One 🎂</title>
 
+<!-- Bubble-letter style font -->
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
   overflow: hidden;
-  font-family: "Comic Sans MS", cursive;
+  font-family: "Lilita One", sans-serif;
   text-align: center;
 }
 
@@ -23,7 +26,7 @@ body {
   filter: brightness(0.85);
 }
 
-/* Soft glow overlay */
+/* Glow overlay */
 .overlay {
   position: fixed;
   width: 100%;
@@ -36,9 +39,12 @@ body {
   position: absolute;
   top: 6vh;
   width: 100%;
-  font-size: 2em;
+  font-size: 2.4em;
   color: white;
-  text-shadow: 0 0 8px hotpink;
+  text-shadow:
+    0 0 8px hotpink,
+    0 0 15px hotpink,
+    0 0 25px white;
 }
 
 /* Message */
@@ -46,10 +52,11 @@ body {
   position: absolute;
   top: 32vh;
   width: 100%;
-  font-size: 1.6em;
+  font-size: 1.8em;
   color: white;
   opacity: 0;
   transition: opacity 1.2s ease;
+  text-shadow: 0 0 10px pink;
 }
 
 /* Cake */
@@ -68,19 +75,22 @@ body {
 /* Candle */
 .candle {
   position: absolute;
-  width: 8px;
-  height: 35px;
+  width: 10px;
+  height: 40px;
   background: white;
-  top: -35px;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 3px;
 }
 
 /* Flame */
 .flame {
-  width: 8px;
-  height: 12px;
+  width: 12px;
+  height: 16px;
   background: orange;
   border-radius: 50%;
-  margin-top: -12px;
+  margin-top: -16px;
   animation: flicker 0.2s infinite;
   transition: opacity 0.5s ease-out;
 }
@@ -113,7 +123,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 22px;
-  font-size: 1em;
+  font-size: 1.1em;
   background: hotpink;
   border: none;
   border-radius: 25px;
@@ -138,32 +148,31 @@ We love you Stella 💕
 </div>
 
 <div class="cake">
-  <div class="candle" style="left: 30px;"><div class="flame"></div></div>
-  <div class="candle" style="left: 80px;"><div class="flame"></div></div>
-  <div class="candle" style="left: 130px;"><div class="flame"></div></div>
+  <div class="candle">
+    <div class="flame"></div>
+  </div>
 </div>
 
-<button class="button" onclick="blowCandles()">Blow Candles 🎂</button>
+<button class="button" onclick="blowCandles()">Blow Candle 🎂</button>
 
 <audio id="song" src="tiny_shoes.mp3"></audio>
 
 <script>
 function blowCandles() {
-  const flames = document.querySelectorAll('.flame');
+  const flame = document.querySelector('.flame');
   const song = document.getElementById("song");
 
-  // fade flames
-  flames.forEach(f => f.style.opacity = 0);
+  // fade flame
+  flame.style.opacity = 0;
 
   // puff effect
-  flames.forEach(f => {
-    const puff = document.createElement("div");
-    puff.className = "puff";
-    puff.style.left = f.getBoundingClientRect().left + "px";
-    puff.style.top = f.getBoundingClientRect().top + "px";
-    document.body.appendChild(puff);
-    setTimeout(() => puff.remove(), 700);
-  });
+  const rect = flame.getBoundingClientRect();
+  const puff = document.createElement("div");
+  puff.className = "puff";
+  puff.style.left = rect.left + "px";
+  puff.style.top = rect.top + "px";
+  document.body.appendChild(puff);
+  setTimeout(() => puff.remove(), 700);
 
   // show message
   document.getElementById("message").style.opacity = 1;
